@@ -11,6 +11,26 @@ Vue.use(VueRouter)
     component: Home
   },
   {
+    path : '/categories',
+    name : 'categories',
+    component:() => import(/* webpackChunkName: "categories" */'../views/Categories.vue')
+  },
+  {
+    path: '/books',
+    name: 'books',
+    component: () => import(/* webpackChunkName: "categories" */ '../views/Books.vue')
+  },
+  {
+    path : '/category/:slug',
+    name: 'category',
+    component:() => import (/* webpackChunkName: "category" */ '../views/Category.vue')
+  },
+  {
+    path : '/book/:slug',
+    name: 'book',
+    component:() => import (/* webpackChunkName: "book" */ '../views/Book.vue')
+  },
+  {
     path: '/about',
     name: 'About',
     // route level code-splitting

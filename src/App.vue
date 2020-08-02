@@ -1,19 +1,157 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
-  </div>
+    <v-app>
+        <!-- For Header if it is Home-->
+        <v-app-bar app color="primary" dark extended v-if="isHome">
+            <!-- membuat nav bar di samping, yang
+            jika diklik, akan show/hide -->
+            <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+
+            <v-toolbar-title>Vueshop</v-toolbar-title>
+
+            <!-- Pemisah Konten -->
+            <v-spacer></v-spacer>
+            
+            <!-- menambahkan icon -->
+            <v-btn icon to='/about' >
+                <!-- Icon dari material design google -->
+                <!-- Membuat icon keranjang belanja dengan
+                penanda -->
+                <v-badge color="orange" overlap>
+                    <template v-slot:badge>
+                        <span>1</span>
+                    </template>
+                    <v-icon>mdi-cart</v-icon>
+                </v-badge>
+            </v-btn>
+
+            <v-text-field slot="extension" hide-details
+            append-icon="mdi-microphone"
+            flat
+            label="Cari"
+            prepend-inner-icon="mdi-magnify"
+            solo-inverted>
+            </v-text-field>
+            <!-- Header -->
+        </v-app-bar>
+
+        <!-- Header Bukan Home -->
+        <v-app-bar app color="primary" dark v-else>
+            <v-btn icon @click.stop="$router.go(-1)">
+                <v-icon>mdi-arrow-left</v-icon>
+            </v-btn>
+            <v-spacer></v-spacer>
+            <v-btn icon to='/about'>
+            <v-badge color="orange" overlap>
+                <template v-slot:badge>
+                    <span>1</span>
+                </template>
+                <v-icon>mdi-cart</v-icon>
+            </v-badge>
+            </v-btn>
+            </v-app-bar> 
+        <!-- Navigation Menu -->
+        <v-card>
+            <v-navigation-drawer app v-model="drawer">
+                <!-- Membuat List Menu di Sebelah Kiri,
+                yang datanya diambil dari data() -->
+                    <!-- Tombol Login dan Register -->
+                    <div class="pa-2" v-if="guest">
+                        <v-btn block color="primary" class="mb-1">
+                            <v-icon left>mdi-lock</v-icon>
+                            Login
+                        </v-btn>
+                        <v-btn block color="success">
+                            <v-icon left>mdi-account</v-icon>
+                            Register
+                        </v-btn>
+                    </div>
+                    
+
+                    <!-- Bagian Avatar -->
+                    <v-list-item v-if="!guest">
+                        <v-list-item-avatar>
+                            <v-img src="https://cdn1-production-images-kly.akamaized.net/P85Ddv6JF2FbVJeoCgCelmhtt4U=/640x360/smart/filters:quality(75):strip_icc():format(jpeg)/kly-media-production/medias/1439641/original/042027300_1482131661-reddit.jpg">
+
+                            </v-img>
+                        </v-list-item-avatar>
+                        <v-list-item-content>
+                            <v-list-item-title>Uzumaki Naruto</v-list-item-title>
+                        </v-list-item-content>
+                    </v-list-item>
+
+                    <v-divider></v-divider>
+                <!--Membuat List  -->
+                
+                <v-list shaped>
+                <v-list-item
+                    v-for="(item, index) in menus"
+                    :key="`menu-`+index"
+                    :to="item.route">
+                    <!-- Menambahkan icon -->
+                    <v-list-item-icon>
+                        <v-icon left>{{item.icon}}</v-icon>
+                    </v-list-item-icon>
+                    <!-- Menambahkan nama -->
+                    <v-list-item-content>
+                        <v-list-item-title>{{item.title}}</v-list-item-title>
+                    </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+                
+                <!-- Tombol Logout -->
+                    <template v-slot:append v-if="!guest">
+                        <div class="pa-2">
+                            <v-btn block color="red" dark>
+                                <v-icon left>mdi-lock</v-icon>
+                                Logout
+                            </v-btn>
+                        </div>
+                    </template>
+
+            </v-navigation-drawer>
+        </v-card>
+
+        <!-- Konten dari Component -->
+        <!-- Secara dinamis, akan berubah sesuai dengan halaman yang dibuka
+        oleh pengguna -->
+        <v-content>
+            <v-container fluid>
+                <v-slide-y-transition>
+                <router-view>Isinya</router-view>
+                </v-slide-y-transition>
+                
+            </v-container>
+        </v-content>
+
+        <!-- Footer -->
+        <v-card>
+            <v-footer absolute app>
+                <v-card-text class="text-center">
+                    &copy; {{new Date().getFullYear()}} - <strong>Vueshop</strong>
+                </v-card-text>
+            </v-footer>
+        </v-card>
+
+    </v-app>
 </template>
 
-<style lang="stylus">
-#app
-  font-family Avenir, Helvetica, Arial, sans-serif
-  -webkit-font-smoothing antialiased
-  -moz-osx-font-smoothing grayscale
-  text-align center
-  color #2c3e50
-  margin-top 60px
-</style>
+<script>
+export default {
+    name: 'App',
+    data: () => ({
+        drawer: false,
+        menus: [
+            {title: 'Home', icon: 'mdi-home', route: '/'},
+            {title: 'About', icon: 'mdi-account', route:'/about'},
+        ],
+        guest: true,
+    }),
+    //computed = properti yang akan selalu dimonitor perubahannya
+  computed: {
+    //memeriksa apakah halaman ini Home atau bukan
+    isHome(){
+      return (this.$route.path === '/')
+    }
+  },
+};
+</script>
