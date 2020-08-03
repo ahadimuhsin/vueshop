@@ -3,7 +3,7 @@
         <v-card v-if="book.slug">
             <!-- Menampilkan gambar -->
             <v-img :src="getImage('/books/'+book.cover)"
-            class="white--text" height="200px">
+            class="white--text" height="300px">
             <v-card-title class="fill-height align-end" v-text="book.title">
             </v-card-title>
             </v-img>
