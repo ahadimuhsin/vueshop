@@ -59,6 +59,7 @@
 </template>
 
 <script>
+import {mapActions} from 'vuex'
 export default {
     data: () => ({
         book: {},
@@ -82,8 +83,15 @@ export default {
                 console.log(responses)
             })
         },
+        ...mapActions({
+            addCart: 'add'
+        }),
         buy(){
-            alert('buy')
+            // alert('buy')
+            //cara memanggil method add
+            //1. this.$store.dispatch('add', this.book)
+            //2. memanggil method pada mapActions
+            this.addCart(this.book)
         }
     }
 };

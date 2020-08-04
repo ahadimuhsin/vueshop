@@ -62,7 +62,7 @@ export default {
   },
   created(){
     console.log('ambil data kategori')
-    this.axios.get('/categories/random/5')
+    this.axios.get('/categories/random/6')
     .then((response)=>{
       let{data} = response.data
       this.categories = data //memasukkan data ke dalam categories
