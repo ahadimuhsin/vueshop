@@ -18,7 +18,7 @@
                 penanda -->
                 <v-badge color="orange" overlap>
                     <template v-slot:badge>
-                        <span>1</span>
+                        <span>{{countCart}}</span>
                     </template>
                     <v-icon>mdi-cart</v-icon>
                 </v-badge>
@@ -27,9 +27,10 @@
             <v-text-field slot="extension" hide-details
             append-icon="mdi-microphone"
             flat
-            label="Cari"
+            label="Search"
             prepend-inner-icon="mdi-magnify"
-            solo-inverted>
+            solo-inverted
+            @click="setDialogComponent('search')">
             </v-text-field>
             <!-- Header -->
         </v-app-bar>
@@ -43,11 +44,13 @@
             <v-btn icon to='/about'>
             <v-badge color="orange" overlap>
                 <template v-slot:badge>
-                    <span>1</span>
+                    <span>{{countCart}}</span>
                 </template>
                 <v-icon>mdi-cart</v-icon>
             </v-badge>
             </v-btn>
+
+
             </v-app-bar> 
         <!-- Navigation Menu -->
         <v-card>
@@ -56,11 +59,12 @@
                 yang datanya diambil dari data() -->
                     <!-- Tombol Login dan Register -->
                     <div class="pa-2" v-if="guest">
-                        <v-btn block color="primary" class="mb-1">
+                        <v-btn block color="primary" class="mb-1"
+                        @click="setDialogComponent('login')">
                             <v-icon left>mdi-lock</v-icon>
                             Login
                         </v-btn>
-                        <v-btn block color="success">
+                        <v-btn block color="success" @click="setDialogComponent('register')">
                             <v-icon left>mdi-account</v-icon>
                             Register
                         </v-btn>
@@ -70,12 +74,12 @@
                     <!-- Bagian Avatar -->
                     <v-list-item v-if="!guest">
                         <v-list-item-avatar>
-                            <v-img src="https://cdn1-production-images-kly.akamaized.net/P85Ddv6JF2FbVJeoCgCelmhtt4U=/640x360/smart/filters:quality(75):strip_icc():format(jpeg)/kly-media-production/medias/1439641/original/042027300_1482131661-reddit.jpg">
+                            <v-img :src="getImage('/users/'+user.avatar)">
 
                             </v-img>
                         </v-list-item-avatar>
                         <v-list-item-content>
-                            <v-list-item-title>Uzumaki Naruto</v-list-item-title>
+                            <v-list-item-title>{{ user.name }}</v-list-item-title>
                         </v-list-item-content>
                     </v-list-item>
 
@@ -101,7 +105,7 @@
                 <!-- Tombol Logout -->
                     <template v-slot:append v-if="!guest">
                         <div class="pa-2">
-                            <v-btn block color="red" dark>
+                            <v-btn block color="red" dark @click="logout">
                                 <v-icon left>mdi-lock</v-icon>
                                 Logout
                             </v-btn>
@@ -110,6 +114,20 @@
 
             </v-navigation-drawer>
         </v-card>
+
+        <!-- Memanggil component alert -->
+        <alert />
+
+        <!-- Komponen Search -->
+        <keep-alive>
+        <v-dialog v-model="dialog" 
+        fullscreen 
+        hide-overlay
+        transition="dialog-bottom-transition">
+            <component :is="currentComponent" 
+            @closed="setDialogStatus"></component>
+        </v-dialog>
+        </keep-alive>
 
         <!-- Konten dari Component -->
         <!-- Secara dinamis, akan berubah sesuai dengan halaman yang dibuka
@@ -136,21 +154,80 @@
 </template>
 
 <script>
+import { mapGetters, mapActions } from 'vuex';
 export default {
     name: 'App',
+    components: {
+        Alert: () => import
+        (/* webpackChunkName: "alert" */ '@/components/Alert.vue'),
+        Search: () => import (/* alias search */ '@/components/Search.vue'),
+        Login: () => import(/* alias login*/ '@/components/Login.vue'),
+        Register: () => import (/* alias register */ '@/components/Register.vue'),
+    },
     data: () => ({
         drawer: false,
+        // dialog: false,
         menus: [
             {title: 'Home', icon: 'mdi-home', route: '/'},
             {title: 'About', icon: 'mdi-account', route:'/about'},
         ],
-        guest: true,
+        // guest: false,
     }),
+    methods: {
+        // closeDialog(value){
+        //     this.dialog = value
+        // },
+        ...mapActions ({
+            setDialogStatus : 'dialog/setStatus',
+            setDialogComponent : 'dialog/setComponent',
+            setAuth: 'auth/set',
+            setAlert : 'alert/set',
+        }),
+        logout(){
+            let config = {
+                headers: {
+                    'Authorization' : 'Bearer ' + this.user.api_token,
+                }
+            }
+            this.axios.post('/logout', {}, config)
+            .then(() => {
+                this.setAuth({}) //kosongkan auth ketika logout
+                this.setAlert({
+                    status: true,
+                    color: 'success',
+                    text: 'Logout succesfully',
+                })
+            })
+            .catch((error) => {
+                let{data} = error.response
+                this.setAlert({
+                    status: true,
+                    color: 'error',
+                    text: data.message,
+                })
+            })
+        }
+    },
     //computed = properti yang akan selalu dimonitor perubahannya
   computed: {
     //memeriksa apakah halaman ini Home atau bukan
     isHome(){
       return (this.$route.path === '/')
+    },
+    ...mapGetters({
+        countCart   : 'cart/count', //mengakses getters count pada file cart.js
+        guest       : 'auth/guest',
+        user        : 'auth/user',
+        dialogStatus : 'dialog/status',
+        currentComponent : 'dialog/component',
+    }),
+    dialog : {
+        get(){
+            return this.dialogStatus
+        },
+        set(value){
+            return this.setDialogStatus(value)
+        }
     }
   },
 };

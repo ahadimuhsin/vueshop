@@ -84,7 +84,8 @@ export default {
             })
         },
         ...mapActions({
-            addCart: 'add'
+            addCart: 'cart/add',
+            setAlert: 'alert/set'
         }),
         buy(){
             // alert('buy')
@@ -92,6 +93,12 @@ export default {
             //1. this.$store.dispatch('add', this.book)
             //2. memanggil method pada mapActions
             this.addCart(this.book)
+
+            this.setAlert({
+                status: true,
+                color : 'success',
+                text: 'Added to cart'
+            })
         }
     }
 };
