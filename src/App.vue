@@ -12,12 +12,12 @@
             <v-spacer></v-spacer>
             
             <!-- menambahkan icon -->
-            <v-btn icon to='/about' >
-                <!-- Icon dari material design google -->
-                <!-- Membuat icon keranjang belanja dengan
+             <!-- Icon dari material design google -->
+            <!-- Membuat icon keranjang belanja dengan
                 penanda -->
+            <v-btn icon @click="setDialogComponent('cart')" >
                 <v-badge color="orange" overlap>
-                    <template v-slot:badge>
+                    <template v-slot:badge v-if="countCart>0">
                         <span>{{countCart}}</span>
                     </template>
                     <v-icon>mdi-cart</v-icon>
@@ -163,6 +163,7 @@ export default {
         Search: () => import (/* alias search */ '@/components/Search.vue'),
         Login: () => import(/* alias login*/ '@/components/Login.vue'),
         Register: () => import (/* alias register */ '@/components/Register.vue'),
+        Cart: () =>import (/* alias cart */ '@/components/Cart.vue')
     },
     data: () => ({
         drawer: false,
