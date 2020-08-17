@@ -59,6 +59,7 @@ export default {
     computed: {
         ...mapGetters({
             user : 'auth/user',
+            prevUrl : 'prevUrl',
         }),
     },
     methods: {
@@ -74,14 +75,17 @@ export default {
                 }
                 this.axios.post('/login', formData)
                 .then((response) => {
-                    let { data } = response.data
-                    this.setAuth(data)
+                    let data_user = response.data.data
+                    this.setAuth(data_user)
                     if(this.user.id_user>0){
                         this.setAlert({
                             status: true,
                             color : 'success',
                             text: 'Login Success',
                         })
+                        if(this.prevUrl.lenght>0){
+                            this.$router.push(this.prevUrl)
+                        }
                         this.close()
                     }
                     else {

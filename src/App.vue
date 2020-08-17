@@ -41,7 +41,7 @@
                 <v-icon>mdi-arrow-left</v-icon>
             </v-btn>
             <v-spacer></v-spacer>
-            <v-btn icon to='/about'>
+            <v-btn icon @click="setDialogComponent('cart')">
             <v-badge color="orange" overlap>
                 <template v-slot:badge>
                     <span>{{countCart}}</span>
@@ -123,7 +123,7 @@
         <v-dialog v-model="dialog" 
         fullscreen 
         hide-overlay
-        transition="dialog-bottom-transition">
+        transition="scale-transition">
             <component :is="currentComponent" 
             @closed="setDialogStatus"></component>
         </v-dialog>
