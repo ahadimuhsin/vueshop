@@ -41,9 +41,9 @@
                         <!-- Select City -->
                         <v-select 
                         v-model="city_id"
-                        v-if="province_id>0"
+                        v-if="province_id"
                         :items="citiesByProvince"
-                        item-text="city_name"
+                        item-text="city"
                         item-value="id"
                         label="City"
                         persistent-hint
@@ -97,6 +97,61 @@
                 </v-container>
             </v-card>
         </div>
+
+        <v-subheader>Courier</v-subheader>
+        <div>
+            <v-card flat>
+                <v-container>
+                    <!-- Pilih Kurir -->
+                    <v-select
+                    v-model="courier"
+                    :items="couriers"
+                    @change="getServices"
+                    item-text="text"
+                    item-value="id"
+                    label="Courier"
+                    persistent-hint
+                    single-line>
+                    </v-select>
+                    <!-- Pilih Layanan -->
+                    <v-select
+                    v-model="service"
+                    v-if="courier"
+                    :items="services"
+                    @change="calculateBill"
+                    item-text="resume"
+                    item-value="service"
+                    label="Courier Service"
+                    persistent-hint
+                    single-line
+                    ></v-select>
+                    <!-- Menampilkan Total Harga Shipping -->
+                    <v-card-actions>
+                        Subtotal
+                        <v-spacer />
+                        Rp. {{ shippingCost.toLocaleString('id-ID') }}
+                    </v-card-actions>
+                </v-container>
+            </v-card>
+        </div>
+        <!-- Menampilkan Total Harga: Barang + Shipping -->
+        <v-subheader>Total</v-subheader>
+        <v-card>
+            <v-container>
+                <v-layout row wrap>
+                    <v-flex xs6 text-center>
+                        Total Bill ({{ totalQuantity }} items)
+                    <div class="title">{{ totalBill.toLocaleString('id-ID') }}</div>
+                    </v-flex>
+                    <v-flex xs6 text-center>
+                        <v-btn color="orange">
+                            <v-icon light>mdi-cash</v-icon> &nbsp;
+                            Pay
+                        </v-btn>
+                    </v-flex>
+                </v-layout>
+            </v-container>
+        </v-card>
     </div>
 </template>
 
@@ -111,6 +166,12 @@ export default {
             phone: '',
             province_id: 0,
             city_id: 0,
+            courier: '',
+            couriers: [],
+            service: '',
+            services: [],
+            shippingCost: 0,
+            totalBill: 0,
         }
     },
     computed: {
@@ -140,6 +201,7 @@ export default {
             setAuth     : 'auth/set',
             setProvinces    : 'region/setProvinces',
             setCities       : 'region/setCities',
+            setCart     : 'cart/set', //untuk mengupdate data belanja agar sesuai dengan database
         }),
         saveShipping(){
             let formData = new FormData()
@@ -173,6 +235,53 @@ export default {
                 })
             })
         },
+        //merequest endpoint service
+        getServices(){
+            let courier = this.courier
+            let encodedCart = JSON.stringify(this.carts)
+            let formData = new formData()
+            //mengambil isi dari form courier dan carts
+            formData.set('courier', courier)
+            formData.set('carts', encodedCart)
+
+            let config = {
+                headers: {
+                    'Authorization': 'Bearer '+this.user.api_token,
+                },
+            }
+            this.axios.post('/services', formData, config)
+            .then((response) => {
+                let response_data = response.data
+                //jika tidak error maka data service dan cart
+                //akan diupdate
+                if(response_data.status != 'error'){
+                    this.services = response_data.data.services
+                    this.setCart(response_data.data.safe_carts)
+                }
+
+                this.setAlert({
+                    status: true,
+                    text: response_data.message,
+                    color: response_data.status,
+                })
+            })
+            .catch((error) => {
+                let responses = error.response
+                this.setAlert({
+                    status: true,
+                    text: responses.data.message,
+                    color: 'error', 
+                })
+            })
+        },
+        //method calculate Bill: menghitung total pembayaran
+        calculateBill(){
+            let selectedService = this.services.find((service)=> {
+                return (service.service == this.service)
+            })
+            this.shippingCost = selectedService.cost
+            this.totalBill = parseInt(this.totalPrice) + parseInt(this.shippingCost)
+        },
     },
     created(){
         this.name = this.user.name
@@ -180,17 +289,26 @@ export default {
         this.phone = this.user.phone
         this.city_id = this.user.city_id
         this.province_id = this.user.province_id
-
+        //periksa apakah provinsi ada dan panjangnya 0
         if (this.provinces && this.provinces.length == 0){
             this.axios.get('/provinces')
             .then((response) => {
                 let { data } = response.data
                 this.setProvinces(data)
             })
+            
             this.axios.get('/cities')
             .then((response) => {
                 let { data } = response.data
-                this.setCities(data)
+                 this.setCities(data)
+            })  
+        }
+
+        //ambil endpoint kurir
+        if(this.couriers.length==0){
+            this.axios.get('/couriers')
+            .then((response) => {
+                this.couriers = response.data.data
             })
         }
     }

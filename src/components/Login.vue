@@ -83,7 +83,9 @@ export default {
                             color : 'success',
                             text: 'Login Success',
                         })
-                        if(this.prevUrl.lenght>0){
+                        //jika sebelumnya membuka halaman lain selain
+                        //halaman login, akan kembali ke halaman itu
+                        if(this.prevUrl.length>0){
                             this.$router.push(this.prevUrl)
                         }
                         this.close()
