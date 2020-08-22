@@ -33,7 +33,7 @@
                         v-model="province_id"
                         :items="provinces"
                         item-text="province"
-                        item-value="id"
+                        item-value="id_province"
                         label="Province"
                         persistent-hint
                         single-line>
@@ -41,10 +41,10 @@
                         <!-- Select City -->
                         <v-select 
                         v-model="city_id"
-                        v-if="province_id"
+                        v-if="province_id>0"
                         :items="citiesByProvince"
                         item-text="city"
-                        item-value="id"
+                        item-value="id_city"
                         label="City"
                         persistent-hint
                         single-line>
@@ -144,7 +144,8 @@
                     <div class="title">{{ totalBill.toLocaleString('id-ID') }}</div>
                     </v-flex>
                     <v-flex xs6 text-center>
-                        <v-btn color="orange">
+                        <v-btn color="orange" @click="dialogConfirm=true"
+                        :disabled="totalBill==0">
                             <v-icon light>mdi-cash</v-icon> &nbsp;
                             Pay
                         </v-btn>
@@ -152,6 +153,25 @@
                 </v-layout>
             </v-container>
         </v-card>
+
+        <!-- Modal Confirmation -->
+        <template>
+            <v-layout row justify-center>
+                <v-dialog v-model="dialogConfirm" persistent max-width="290">
+                    <v-card>
+                        <v-card-title class="headline">Confirmation</v-card-title>
+                        <v-card-text>
+                            If you continue, transaction will be processed
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-btn color="warning" @click="cancel">Cancel</v-btn>
+                            <v-spacer></v-spacer>
+                            <v-btn color="success" @click="pay">Continue</v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
+            </v-layout>
+        </template>
     </div>
 </template>
 
@@ -172,6 +192,7 @@ export default {
             services: [],
             shippingCost: 0,
             totalBill: 0,
+            dialogConfirm: false,
         }
     },
     computed: {
@@ -202,11 +223,13 @@ export default {
             setProvinces    : 'region/setProvinces',
             setCities       : 'region/setCities',
             setCart     : 'cart/set', //untuk mengupdate data belanja agar sesuai dengan database
+            setPayment  : 'setPayment',
         }),
         saveShipping(){
             let formData = new FormData()
             formData.set('name', this.name)
             formData.set('address', this.address)
+            formData.set('phone', this.phone)
             formData.set('province_id', this.province_id)
             formData.set('city_id', this.city_id)
             //check header dari user login dan ambil api token
@@ -239,10 +262,11 @@ export default {
         getServices(){
             let courier = this.courier
             let encodedCart = JSON.stringify(this.carts)
-            let formData = new formData()
+            console.log(encodedCart)
+            let formData = new FormData()
             //mengambil isi dari form courier dan carts
             formData.set('courier', courier)
-            formData.set('carts', encodedCart)
+            formData.set('carts', encodedCart);
 
             let config = {
                 headers: {
@@ -282,6 +306,52 @@ export default {
             this.shippingCost = selectedService.cost
             this.totalBill = parseInt(this.totalPrice) + parseInt(this.shippingCost)
         },
+        //jika user setuju dengan pesanannya, method pay akan dijalankan
+        pay(){
+            this.dialogConfirm = false
+            let courier = this.courier
+            let service = this.service
+            let safeCart = JSON.stringify(this.carts)
+            console.log(safeCart)
+            let formData = new FormData()
+            formData.set('courier', courier)
+            formData.set('service', service)
+            formData.set('carts', safeCart);
+            //tiap jalananin method post, sertakan api token
+            let config = {
+                headers: {
+                    'Authorization' : 'Bearer ' +this.user.api_token,
+                },
+            }
+            this.axios.post('/payment', formData, config)
+            .then((response) => {
+                let { data } = response
+                if(data && data.status == 'success'){
+                    // this.setPayment(data.data)
+                    // this.$router.push({path: "/payment"})
+                    this.setCart([])
+                    let payment_link = data.data.payment_link
+                    window.location = payment_link
+                }
+
+                this.setAlert({
+                    status: true,
+                    text: data.message,
+                    color: data.status,
+                })
+            })
+            .catch((error) => {
+                let{ data } = error.response
+                this.setAlert({
+                    status: true,
+                    text: data.message,
+                    color: 'error',
+                })
+            })
+        },
+        cancel(){
+            this.dialogConfirm = false
+        }
     },
     created(){
         this.name = this.user.name

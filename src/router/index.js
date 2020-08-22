@@ -49,7 +49,13 @@ const router = new VueRouter({
         name: 'checkout',
         component: () => import( /* Nama Alias checkout */ '../views/Checkout.vue'),
         meta: { auth: true } //mengatur sifatnya provate, agar hanya user yg sudah login yg boleh mengaksesnya
-      }
+      },
+      {
+        path: '/payment',
+        name: 'payment',
+        component: () => import(/* Alias payment*/ '../views/Payment.vue'),
+        meta: { auth: true}
+      },
   ]
 })
 
