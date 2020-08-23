@@ -56,6 +56,18 @@ const router = new VueRouter({
         component: () => import(/* Alias payment*/ '../views/Payment.vue'),
         meta: { auth: true}
       },
+      {
+        path: '/profile',
+        name: 'profile',
+        component: () => import(/* alias profile*/ '../views/Profile.vue'),
+        meta: {auth:true}
+      },
+      {
+        path: '/my-order',
+        name: 'my-order',
+        component: () => import(/* alias my-order */ '../views/MyOrder.vue'),
+        meta: {auth: true}
+      },
   ]
 })
 

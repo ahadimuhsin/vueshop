@@ -1,7 +1,7 @@
 <template>
     <v-snackbar v-model="alert" :color="color" multi-line top>
         {{text}}
-        <v-btn dark text @click="close" false>
+        <v-btn dark text @click="close">
             <v-icon>mdi-close-circle</v-icon>
         </v-btn>
     </v-snackbar>

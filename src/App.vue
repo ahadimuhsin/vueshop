@@ -87,19 +87,24 @@
                 <!--Membuat List  -->
                 
                 <v-list shaped>
-                <v-list-item
-                    v-for="(item, index) in menus"
-                    :key="`menu-`+index"
-                    :to="item.route">
-                    <!-- Menambahkan icon -->
-                    <v-list-item-icon>
-                        <v-icon left>{{item.icon}}</v-icon>
-                    </v-list-item-icon>
-                    <!-- Menambahkan nama -->
-                    <v-list-item-content>
-                        <v-list-item-title>{{item.title}}</v-list-item-title>
-                    </v-list-item-content>
+                    <template v-for="(item, index) in menus">
+                        <!-- Menu Profile akan ditampilkan jika tidak ada
+                        flag auth atau ada flag auth user sudah login atau bukan
+                        guest -->
+                    <v-list-item
+                        :key="`menu-`+index"
+                        :to="item.route"
+                        v-if="!item.auth || (item.auth && !guest)">
+                        <!-- Menambahkan icon -->
+                        <v-list-item-icon>
+                            <v-icon left>{{item.icon}}</v-icon>
+                        </v-list-item-icon>
+                        <!-- Menambahkan nama -->
+                        <v-list-item-content>
+                            <v-list-item-title>{{item.title}}</v-list-item-title>
+                        </v-list-item-content>
                     </v-list-item>
+                    </template>
                 </v-list>
                 
                 <!-- Tombol Logout -->
@@ -170,7 +175,9 @@ export default {
         // dialog: false,
         menus: [
             {title: 'Home', icon: 'mdi-home', route: '/'},
-            {title: 'About', icon: 'mdi-account', route:'/about'},
+            {title: 'Profile', icon: 'mdi-account', route: '/profile', auth: true},
+            {title: 'My Order', icon: 'mdi-shopping', route: '/my-order', auth: true},
+            {title: 'About', icon: 'mdi-help-box', route:'/about'},
         ],
         // guest: false,
     }),
